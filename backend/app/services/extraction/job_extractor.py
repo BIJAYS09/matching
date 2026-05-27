@@ -1,7 +1,10 @@
 from openai import OpenAI
 
 from app.core.config import settings
-from app.schemas.job_extraction import JobExtraction
+
+from app.schemas.job_extraction import (
+    JobExtraction
+)
 
 
 client = OpenAI(
@@ -12,13 +15,13 @@ client = OpenAI(
 def extract_job_information(raw_text: str):
 
     prompt = f"""
-    Extract structured information from this defense job description.
+    Extract structured information from this job description.
 
     IMPORTANT:
     - Do NOT invent information
-    - Return only information present in text
-    - Normalize skills and technologies
-    - Extract defense-specific terminology carefully
+    - Return ONLY information present
+    - Normalize terminology
+    - Extract technologies carefully
 
     JOB DESCRIPTION:
 
@@ -30,12 +33,15 @@ def extract_job_information(raw_text: str):
         model="gpt-4.1-mini",
 
         messages=[
+
             {
                 "role": "system",
                 "content": (
-                    "You are an expert defense recruitment parser."
+                    "You are an expert recruiter and "
+                    "job description parser."
                 )
             },
+
             {
                 "role": "user",
                 "content": prompt

@@ -1,40 +1,59 @@
-from fastapi import APIRouter, UploadFile, File
+import os
+
+from fastapi import (
+    APIRouter,
+    UploadFile,
+    File
+)
+
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
+
 from app.db.models.cv import CV
-from app.utils.pdf import extract_pdf_text
-from app.services.embeddings.model import create_embedding
+
+from app.services.cv.process_cv import (
+    process_cv
+)
 
 router = APIRouter()
 
 
 @router.post("/upload-cv")
-async def upload_cv(file: UploadFile = File(...)):
 
-    path = f"tmp/{file.filename}"
+async def upload_cv(
 
-    with open(path, "wb") as f:
+    file: UploadFile = File(...)
+):
+
+    os.makedirs(
+        "tmp",
+        exist_ok=True
+    )
+
+    file_path = f"tmp/{file.filename}"
+
+    with open(file_path, "wb") as f:
+
         f.write(await file.read())
 
-    text = extract_pdf_text(path)
-
-    embedding = create_embedding(text)
+    data = process_cv(file_path)
 
     db: Session = SessionLocal()
 
-    cv = CV(
-        candidate_name=file.filename,
-        raw_text=text,
-        embedding=embedding
-    )
+    cv = CV(**data)
 
     db.add(cv)
+
     db.commit()
+
     db.refresh(cv)
 
-    print(f"CV uploaded with ID {cv.id} and embedding: {embedding}")
     return {
+
         "cv_id": cv.id,
-        "message": "CV uploaded successfully"
+
+        "candidate_name": cv.candidate_name,
+
+        "skills": data["skills"]
     }

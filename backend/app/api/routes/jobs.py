@@ -31,5 +31,6 @@ def add_job(url: str):
 
     return {
         "job_id": job.id,
-        "title": job.title
+        "title": job.title,
+        "company": job.company
     }

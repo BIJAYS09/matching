@@ -1,25 +1,28 @@
 import json
+
 import numpy as np
 
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import (
+    cosine_similarity
+)
 
 
 def compute_similarity(
-    cv_embedding,
-    job_embedding
+    embedding1,
+    embedding2
 ):
 
-    cv = np.array(
-        json.loads(cv_embedding)
+    e1 = np.array(
+        json.loads(embedding1)
     ).reshape(1, -1)
 
-    job = np.array(
-        json.loads(job_embedding)
+    e2 = np.array(
+        json.loads(embedding2)
     ).reshape(1, -1)
 
     similarity = cosine_similarity(
-        cv,
-        job
+        e1,
+        e2
     )[0][0]
 
     return float(similarity)
