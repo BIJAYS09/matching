@@ -33,6 +33,7 @@ async def upload_cv(file: UploadFile = File(...)):
     db.commit()
     db.refresh(cv)
 
+    print(f"CV uploaded with ID {cv.id} and embedding: {embedding}")
     return {
         "cv_id": cv.id,
         "message": "CV uploaded successfully"

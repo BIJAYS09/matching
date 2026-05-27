@@ -1,5 +1,8 @@
 from openai import OpenAI
+from langchain_groq import ChatGroq
 from app.core.config import settings
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
 
 
 client = OpenAI(
@@ -10,7 +13,7 @@ client = OpenAI(
 def generate_explanation(cv_text, job_text, score):
 
     prompt = f"""
-    You are an expert defense recruiter.
+    You are an expert recruiter.
 
     Explain why this CV matches this job.
 
@@ -29,14 +32,5 @@ def generate_explanation(cv_text, job_text, score):
     {job_text[:4000]}
     """
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
-    return response.choices[0].message.content
+    response = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.3, max_tokens=1000).invoke(prompt)
+    return response.text.strip()

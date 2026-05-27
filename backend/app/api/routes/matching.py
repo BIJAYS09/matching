@@ -41,6 +41,8 @@ def match_jobs(cv_id: int):
             "score": score,
             "explanation": explanation
         })
+        
+        print(f"Computed similarity for CV {cv_id} and Job {job.id}: {score}, explanation: {explanation}")
 
     results.sort(
         key=lambda x: x["score"],
