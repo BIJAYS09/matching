@@ -48,6 +48,8 @@ async def upload_cv(
     db.commit()
 
     db.refresh(cv)
+    
+    print("CV Processed and Saved:", cv.id)
 
     return {
 

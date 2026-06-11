@@ -1,22 +1,29 @@
 from fastapi import APIRouter
+
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
+
 from app.db.models.cv import CV
+
 from app.db.models.job import Job
 
-from app.services.embeddings.similarity import compute_similarity
-from app.services.matching.explanation import generate_explanation
+from app.services.matching.hybrid_matcher import (
+    hybrid_match
+)
 
 router = APIRouter()
 
 
 @router.get("/match/{cv_id}")
+
 def match_jobs(cv_id: int):
 
     db: Session = SessionLocal()
 
-    cv = db.query(CV).filter(CV.id == cv_id).first()
+    cv = db.query(CV).filter(
+        CV.id == cv_id
+    ).first()
 
     jobs = db.query(Job).all()
 
@@ -24,28 +31,32 @@ def match_jobs(cv_id: int):
 
     for job in jobs:
 
-        score = compute_similarity(
-            cv.embedding,
-            job.embedding
-        )
-
-        explanation = generate_explanation(
-            cv.raw_text,
-            job.raw_text,
-            score
+        result = hybrid_match(
+            cv,
+            job
         )
 
         results.append({
+
             "job_id": job.id,
+
+            "title": job.title,
+
+            "company": job.company,
+
+            "location": job.location,
+
             "url": job.url,
-            "score": score,
-            "explanation": explanation
+            
+            "skills": job.skills,
+
+            **result
         })
-        
-        print(f"Computed similarity for CV {cv_id} and Job {job.id}: {score}, explanation: {explanation}")
 
     results.sort(
-        key=lambda x: x["score"],
+
+        key=lambda x: x["final_score"],
+
         reverse=True
     )
 

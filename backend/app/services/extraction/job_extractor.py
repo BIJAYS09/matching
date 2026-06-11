@@ -6,11 +6,10 @@ from app.schemas.job_extraction import (
     JobExtraction
 )
 
+from langchain_groq import ChatGroq
 
-client = OpenAI(
-    api_key=settings.OPENAI_API_KEY
-)
-
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
 
 def extract_job_information(raw_text: str):
 
@@ -27,30 +26,22 @@ def extract_job_information(raw_text: str):
 
     {raw_text[:12000]}
     """
+    
+    messages = [
+    {
+        "role": "system",
+        "content": "You are an expert recruiter and job description parser."
+    },
+    {
+        "role": "user",
+        "content": prompt
+    }
+]
 
-    completion = client.beta.chat.completions.parse(
+    completion = ChatGroq(model="llama-3.3-70b-versatile", 
+                          temperature=0.3).with_structured_output(JobExtraction).invoke(messages)
 
-        model="gpt-4.1-mini",
-
-        messages=[
-
-            {
-                "role": "system",
-                "content": (
-                    "You are an expert recruiter and "
-                    "job description parser."
-                )
-            },
-
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-
-        response_format=JobExtraction
-    )
-
-    parsed = completion.choices[0].message.parsed
+    print("Raw extraction job:", completion)
+    parsed = completion
 
     return parsed

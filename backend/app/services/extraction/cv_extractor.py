@@ -6,10 +6,9 @@ from app.schemas.cv_extraction import (
     CVExtraction
 )
 
-
-client = OpenAI(
-    api_key=settings.OPENAI_API_KEY
-)
+from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
 
 
 def extract_cv_information(raw_text: str):
@@ -28,12 +27,8 @@ def extract_cv_information(raw_text: str):
 
     {raw_text[:12000]}
     """
-
-    completion = client.beta.chat.completions.parse(
-
-        model="gpt-4.1-mini",
-
-        messages=[
+    
+    messages=[
 
             {
                 "role": "system",
@@ -47,11 +42,13 @@ def extract_cv_information(raw_text: str):
                 "role": "user",
                 "content": prompt
             }
-        ],
+        ]
+    
+    completion = ChatGroq(model="llama-3.3-70b-versatile", 
+                          temperature=0.3).with_structured_output(CVExtraction).invoke(messages)
+ 
 
-        response_format=CVExtraction
-    )
-
-    parsed = completion.choices[0].message.parsed
+    print("Raw CV Extraction Response:", completion)
+    parsed = completion
 
     return parsed

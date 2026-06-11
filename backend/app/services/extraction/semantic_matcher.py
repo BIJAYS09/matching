@@ -2,11 +2,11 @@ from openai import OpenAI
 
 from app.core.config import settings
 
+from langchain_groq import ChatGroq
 
-client = OpenAI(
-    api_key=settings.OPENAI_API_KEY
-)
 
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file  
 
 def semantic_match_analysis(
 
@@ -35,17 +35,15 @@ def semantic_match_analysis(
     - missing skills
     - assessment
     """
-
-    response = client.chat.completions.create(
-
-        model="gpt-4.1-mini",
-
-        messages=[
+    
+    messages=[
             {
                 "role": "user",
                 "content": prompt
             }
         ]
-    )
 
-    return response.choices[0].message.content
+    response = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.3, max_tokens=1000).invoke(messages)
+
+    print("Semantic Match Analysis Response:", response.text.strip())
+    return response.text.strip()
